@@ -1,0 +1,48 @@
+[project]
+name = "anythingllm-mcp"
+version = "1.0.0"
+description = "MCP Server for AnythingLLM - Workspace, Chat, Document, and System management"
+requires-python = ">=3.10"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "andre" }
+]
+keywords = ["mcp", "anythingllm", "llm", "agent", "server"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "respx>=0.21.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/andreperez/anythingllm-mcp"
+Repository = "https://github.com/andreperez/anythingllm-mcp"
+Issues = "https://github.com/andreperez/anythingllm-mcp/issues"
+
+[project.scripts]
+anythingllm-mcp = "anythingllm_mcp:main"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
