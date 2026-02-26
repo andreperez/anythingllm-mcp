@@ -8,9 +8,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: AnythingLLM/mcp-server
 
     steps:
       - name: Checkout
