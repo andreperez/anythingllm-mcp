@@ -1,0 +1,83 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe your idea so we can evaluate it.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: Describe the problem you're trying to solve or the use case for this feature.
+      placeholder: |
+        I'm trying to... but currently...
+        As a user, I want to... so that...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see.
+      placeholder: |
+        A new tool called `anythingllm_xxx` that...
+        Or a change to the existing `anythingllm_yyy` tool to support...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or workarounds you've considered.
+      placeholder: |
+        I considered... but it doesn't work because...
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What area does this feature relate to?
+      options:
+        - New MCP Tool
+        - Existing Tool Enhancement
+        - Authentication / Security
+        - Documentation
+        - Testing
+        - Performance
+        - Developer Experience
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: anythingllm-api
+    attributes:
+      label: Related AnythingLLM API Endpoint
+      description: Does this feature map to an existing AnythingLLM API endpoint?
+      options:
+        - "Yes - existing endpoint not yet covered"
+        - "Yes - existing endpoint needs more coverage"
+        - "No - this is an MCP-level feature"
+        - "Not sure"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, references, or screenshots.
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to submit a pull request for this feature.
+          required: false

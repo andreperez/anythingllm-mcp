@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: AnythingLLM Documentation
+    url: https://docs.anythingllm.com
+    about: Check the official AnythingLLM documentation for setup and usage questions.
+  - name: MCP Protocol Specification
+    url: https://modelcontextprotocol.io
+    about: Learn more about the Model Context Protocol.
+  - name: Discussions
+    url: https://github.com/andreperez/anythingllm-mcp/discussions
+    about: Ask questions and share ideas in GitHub Discussions.
