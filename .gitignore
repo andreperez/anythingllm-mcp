@@ -31,3 +31,12 @@ Thumbs.db
 
 # Private local files
 TODO.local.md
+
+# GitHub Copilot personal configuration
+.github/copilot-instructions.md
+.github/agents/
+.github/instructions/
+.github/hooks/
+.github/prompts/
+.github/skills/
+logs/
