@@ -376,6 +376,29 @@ async def delete_thread(slug: str, thread_slug: str) -> str:
 
 
 @mcp.tool(
+    name="anythingllm_update_thread",
+    annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False},
+)
+async def update_thread(slug: str, thread_slug: str, name: str) -> str:
+    """Update the name of an existing chat thread.
+
+    Args:
+        slug: Workspace slug.
+        thread_slug: Thread slug to update.
+        name: New name for the thread.
+    """
+    try:
+        result = await _api(
+            f"/workspace/{slug}/thread/{thread_slug}/update",
+            method="POST",
+            body={"name": name},
+        )
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
     name="anythingllm_chat_in_thread",
     annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False},
 )
@@ -476,6 +499,48 @@ async def upload_link(link: str) -> str:
 
 
 @mcp.tool(
+    name="anythingllm_upload_file",
+    annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": True},
+)
+async def upload_file(file_path: str) -> str:
+    """Upload a file from the local filesystem to AnythingLLM.
+
+    Args:
+        file_path: Absolute path to the file on the local filesystem.
+    """
+    try:
+        import pathlib
+        path = pathlib.Path(file_path)
+        if not path.exists() or not path.is_file():
+            return f"Error: File not found: {file_path}"
+            
+        _require_api_key()
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Accept": "application/json",
+        }
+        url = f"{API_BASE_URL}/api/v1/document/upload"
+        
+        async with httpx.AsyncClient() as client:
+            with open(file_path, "rb") as f:
+                # Add a dummy content-type so httpx figures it's a file
+                files = {"file": (path.name, f)}
+                response = await client.post(
+                    url,
+                    headers=headers,
+                    files=files,
+                    timeout=300.0,
+                )
+                response.raise_for_status()
+                content_type = response.headers.get("content-type", "")
+                if "application/json" in content_type:
+                    return _json_response(response.json())
+                return _json_response(response.text)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
     name="anythingllm_upload_raw_text",
     annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False},
 )
@@ -498,6 +563,159 @@ async def upload_raw_text(text_content: str, title: str) -> str:
 
 
 @mcp.tool(
+    name="anythingllm_upload_file_to_folder",
+    annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False},
+)
+async def upload_file_to_folder(file_path: str, folder_name: str) -> str:
+    """Upload a file from the local filesystem into a specific document folder in AnythingLLM.
+
+    Args:
+        file_path: Absolute path to the file on the local filesystem.
+        folder_name: Target folder name in AnythingLLM (must already exist).
+    """
+    try:
+        import pathlib
+        path = pathlib.Path(file_path)
+        if not path.exists() or not path.is_file():
+            return f"Error: File not found: {file_path}"
+
+        _require_api_key()
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Accept": "application/json",
+        }
+        url = f"{API_BASE_URL}/api/v1/document/upload/{folder_name}"
+
+        async with httpx.AsyncClient() as client:
+            with open(file_path, "rb") as f:
+                files = {"file": (path.name, f)}
+                response = await client.post(
+                    url,
+                    headers=headers,
+                    files=files,
+                    timeout=300.0,
+                )
+                response.raise_for_status()
+                content_type = response.headers.get("content-type", "")
+                if "application/json" in content_type:
+                    return _json_response(response.json())
+                return _json_response(response.text)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
+    name="anythingllm_list_documents_in_folder",
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False},
+)
+async def list_documents_in_folder(folder_name: str) -> str:
+    """List all documents inside a specific folder.
+
+    Args:
+        folder_name: Folder name to list documents from.
+    """
+    try:
+        result = await _api(f"/documents/folder/{folder_name}")
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
+    name="anythingllm_get_document",
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False},
+)
+async def get_document(doc_name: str) -> str:
+    """Get metadata and details for a specific document by its stored name.
+
+    The doc_name is the internal document identifier returned by list_documents
+    (e.g. 'custom-documents/myfile.pdf-abc123.json').
+
+    Args:
+        doc_name: Document name/path as returned by the documents API.
+    """
+    try:
+        result = await _api(f"/document/{doc_name}")
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
+    name="anythingllm_get_document_metadata_schema",
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False},
+)
+async def get_document_metadata_schema() -> str:
+    """Get the metadata schema that AnythingLLM uses for documents."""
+    try:
+        result = await _api("/document/metadata-schema")
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
+    name="anythingllm_create_folder",
+    annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False},
+)
+async def create_folder(name: str) -> str:
+    """Create a new document folder in AnythingLLM.
+
+    Args:
+        name: Name for the new folder.
+    """
+    try:
+        result = await _api("/document/create-folder", method="POST", body={"name": name})
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
+    name="anythingllm_remove_folder",
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": False, "openWorldHint": False},
+)
+async def remove_folder(name: str) -> str:
+    """Permanently delete a document folder and all its contents.
+
+    Args:
+        name: Folder name to delete.
+    """
+    try:
+        result = await _api("/document/remove-folder", method="DELETE", body={"name": name})
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
+    name="anythingllm_move_files",
+    annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False},
+)
+async def move_files(files: list[dict[str, str]]) -> str:
+    """Move documents between folders.
+
+    Each entry in 'files' must have 'from' and 'to' keys with document paths
+    as returned by list_documents (e.g. 'custom-documents/file.pdf-uuid.json').
+
+    Args:
+        files: List of move operations, each with 'from' and 'to' path strings.
+               Example: [{"from": "custom-documents/a.pdf-uuid.json",
+                          "to": "custom-documents/my-folder/a.pdf-uuid.json"}]
+    """
+    try:
+        if not files:
+            return "Error: 'files' list cannot be empty."
+        for entry in files:
+            if "from" not in entry or "to" not in entry:
+                return "Error: Each entry in 'files' must have 'from' and 'to' keys."
+        result = await _api("/document/move-files", method="POST", body={"files": files})
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
     name="anythingllm_update_embeddings",
     annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False},
 )
@@ -506,12 +724,24 @@ async def update_embeddings(
     adds: Optional[list[str]] = None,
     deletes: Optional[list[str]] = None,
 ) -> str:
-    """Add or remove document embeddings in a workspace. Use document paths from list_documents.
+    """Embed or un-embed documents in a workspace (equivalent to "Save and Embed" in the UI).
+
+    This is the final step after uploading documents to AnythingLLM storage.
+    Typical workflow:
+      1. Upload a file     -> upload_file / upload_file_to_folder / upload_link / upload_raw_text
+      2. List documents    -> list_documents / list_documents_in_folder  (get the doc paths)
+      3. Embed into workspace -> THIS TOOL with 'adds' containing the doc paths from step 2
+
+    Once embedded, the document's content is vectorized and available for
+    RAG queries in the workspace. Removing (via 'deletes') un-embeds the
+    document from the workspace but does NOT delete it from storage.
 
     Args:
-        slug: Workspace slug
-        adds: Document paths to add (from /api/v1/documents)
-        deletes: Document names to remove
+        slug: Workspace slug where documents will be embedded.
+        adds: Document paths to embed, as returned by list_documents
+              (e.g. ['custom-documents/Pine Script/file.pine-abc123.json']).
+        deletes: Document paths to un-embed (remove from workspace only,
+                 the file remains in AnythingLLM storage).
     """
     try:
         body: dict[str, Any] = {}
@@ -525,6 +755,33 @@ async def update_embeddings(
             f"/workspace/{slug}/update-embeddings",
             method="POST",
             body=body,
+        )
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
+    name="anythingllm_update_pin",
+    annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False},
+)
+async def update_pin(slug: str, doc_path: str, pinned: bool) -> str:
+    """Pin or unpin a document in a workspace.
+
+    Pinned documents are always included in the LLM context for every query,
+    regardless of vector similarity results.
+
+    Args:
+        slug: Workspace slug.
+        doc_path: Document path as returned by list_documents
+                  (e.g. 'custom-documents/myfile.pdf-abc123.json').
+        pinned: True to pin, False to unpin.
+    """
+    try:
+        result = await _api(
+            f"/workspace/{slug}/update-pin",
+            method="POST",
+            body={"docPath": doc_path, "pinStatus": pinned},
         )
         return _json_response(result)
     except Exception as e:
@@ -610,6 +867,33 @@ async def export_chats() -> str:
     """Export all chat logs from all workspaces."""
     try:
         result = await _api("/system/export-chats")
+        return _json_response(result)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(
+    name="anythingllm_remove_documents",
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": False, "openWorldHint": False},
+)
+async def remove_documents(names: list[str]) -> str:
+    """Permanently delete one or more documents from the system.
+
+    This removes the documents from AnythingLLM storage entirely.
+    They will also be removed from any workspaces that had them embedded.
+
+    Args:
+        names: List of document names/paths as returned by list_documents
+               (e.g. ['custom-documents/myfile.pdf-abc123.json']).
+    """
+    try:
+        if not names:
+            return "Error: 'names' list cannot be empty."
+        result = await _api(
+            "/system/remove-documents",
+            method="DELETE",
+            body={"names": names},
+        )
         return _json_response(result)
     except Exception as e:
         return _handle_error(e)
