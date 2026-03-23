@@ -40,3 +40,6 @@ TODO.local.md
 .github/prompts/
 .github/skills/
 logs/
+
+# Kilo Code
+.kilo/
