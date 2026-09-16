@@ -12,7 +12,7 @@ from typing import Optional, Any, cast
 from enum import Enum
 
 import httpx
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # ──────────────────────────────────────────────
 # Configuration
@@ -21,7 +21,7 @@ from mcp.server.fastmcp import FastMCP
 API_BASE_URL = os.environ.get("ANYTHINGLLM_BASE_URL", "http://localhost:3001").rstrip("/")
 API_KEY = os.environ.get("ANYTHINGLLM_API_KEY", "")
 
-mcp = FastMCP(
+mcp = MCPServer(
     "anythingllm_mcp",
     instructions=(
         "MCP server for AnythingLLM. Provides workspace management, chat, "
